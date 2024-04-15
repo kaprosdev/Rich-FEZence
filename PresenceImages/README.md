@@ -21,3 +21,5 @@ Spoilers (for the mod and FEZ):
 - `elders_glitch.png` [eventually] is displayed between the Hexahedron breaking and the reboot.
 - `descending.png` is displayed during the 32-bit ending cutscene.
 - `transcending.jpg` is displayed during the 64-bit ending cutscene.
+- `newgameplus.png` is a small icon that will appear beside the main level image if you're in NG+ (i.e. have first-person mode).
+- `newgameplusplus.png` is a small icon that will appear beside the main level image if you have anaglyph 3D unlocked - I couldn't remember if this was contingent on being an NG+, so the name is whatever

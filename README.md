@@ -7,6 +7,7 @@ Discord Rich Presence for FEZ!
 - "Level name" tooltip (roughly cleaned up from level names in code)
 - Pause state ("Exploring" or "Paused")
 - Cube shards + anticubes count
+- Displays NG+/NG++? status
 - Some special cases...
 
 ## Limitations

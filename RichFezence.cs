@@ -154,7 +154,8 @@ namespace RichFEZence
 					Assets =
 					{
 						LargeImage = largeImageName,
-						LargeText = PresenceUtils.Utf16ToUtf8(largeImageText)
+						LargeText = PresenceUtils.Utf16ToUtf8(largeImageText),
+						SmallImage = GameState.SaveData.HasStereo3D ? "newgameplusplus" : (GameState.SaveData.IsNewGamePlus ? "newgameplus" : null)
 					}
 				};
 				activityState.UpdateActivity(activity, (result) => { });
