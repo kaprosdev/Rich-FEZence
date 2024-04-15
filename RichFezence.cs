@@ -63,39 +63,17 @@ namespace RichFEZence
 		public Hook end64StartHook;
 		public Hook end64EndHook;
 
-		readonly char[] GLITCH_CHARS = "░▒▓┤╡╢╖╕╣║╗╝╜╛┐└┴┬├┼╞╟╚╔╩╦╠╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀■".ToCharArray();
-
-		const float GLITCH_PROBABILITY = 0.2f;
-
 		public Activity GetLoadingActivity(bool glitched = false)
 		{
 			return new Activity
 			{
-				Details = glitched ? GlitchString("Loading, please wait...") : "Loading, please wait...",
+				Details = glitched ? PresenceUtils.GlitchString("Loading, please wait...") : "Loading, please wait...",
 				State = "v" + Fez.Version,
 				Assets =
 				{
 					LargeImage = glitched ? "start_menus_glitch" : "start_menus"
 				}
 			};
-		}
-
-		public string GlitchString(string baseStr)
-		{
-			char[] fullstr = baseStr.ToCharArray();
-			for(int i = 0; i < fullstr.Length; i++)
-			{
-				if(RandomHelper.Probability(GLITCH_PROBABILITY))
-				{
-					fullstr[i] = GetGlitchChar();
-				}
-			}
-			return string.Join("", fullstr);
-		}
-
-		public char GetGlitchChar()
-		{
-			return RandomHelper.InList(GLITCH_CHARS);
 		}
 
 		public RichFezence(Game game) : base(game)
@@ -171,27 +149,16 @@ namespace RichFEZence
 				}
 				var activity = new Activity
 				{
-					Details = details,
-					State = Utf16ToUtf8(state),
+					Details = PresenceUtils.Utf16ToUtf8(details),
+					State = PresenceUtils.Utf16ToUtf8(state),
 					Assets =
 					{
 						LargeImage = largeImageName,
-						LargeText = largeImageText
+						LargeText = PresenceUtils.Utf16ToUtf8(largeImageText)
 					}
 				};
 				activityState.UpdateActivity(activity, (result) => { });
 			}
-		}
-
-		// https://stackoverflow.com/questions/6198744/convert-string-utf-16-to-utf-8-in-c-sharp saved my LIFE
-		public static string Utf16ToUtf8(string utf16String)
-		{
-			// Get UTF16 bytes and convert UTF16 bytes to UTF8 bytes
-			byte[] utf16Bytes = Encoding.Unicode.GetBytes(utf16String);
-			byte[] utf8Bytes = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, utf16Bytes);
-
-			// Return UTF8 bytes as ANSI string
-			return Encoding.Default.GetString(utf8Bytes);
 		}
 
 		public override void Initialize()
