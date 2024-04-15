@@ -232,7 +232,9 @@ namespace RichFEZence
 
 		readonly Dictionary<string, Func<IGameStateManager, string>> special_state_levels = new Dictionary<string, Func<IGameStateManager, string>>()
 		{
-			["temple_of_love"] = (gameState) => $"{(gameState.SaveData.HasDoneHeartReboot ? "" : $"[ {(gameState.SaveData.PiecesOfHeart > 0 ? "▀" : " ")}{(gameState.SaveData.PiecesOfHeart > 1 ? "▄" : " ")}{(gameState.SaveData.PiecesOfHeart > 2 ? "▀" : " ")} ]")}"
+			["temple_of_love"] = (gameState) => $"{(gameState.SaveData.HasDoneHeartReboot ? "" : $"[ {"▀▄▀".Substring(0, gameState.SaveData.PiecesOfHeart)}{"   ".Substring(0, 3 - gameState.SaveData.PiecesOfHeart)} ]")}",
+			["owl"] = (gameState) => "🦉🦉🦉🦉".Substring(0, gameState.SaveData.CollectedOwls * 2),
+			["big_owl"] = (gameState) => "🦉🦉🦉🦉".Substring(0, gameState.SaveData.CollectedOwls * 2)
 		};
 
 		readonly string[] level_name_trims = ["_a$", "_b$", "_c$", "_2d$", "_3d$", "_one$", "_two$", "_2$", "_three$", "_alt$"];
