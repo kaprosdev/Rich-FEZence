@@ -54,6 +54,10 @@
 			<HintPath>$(FezDir)\FNA.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+	  <Reference Include="MMHOOK_FEZ">
+			<HintPath>$(FezDir)\MMHOOK_FEZ.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="MonoMod">
 			<HintPath>$(MonoModDir)\MonoMod.exe</HintPath>
 			<Private>False</Private>

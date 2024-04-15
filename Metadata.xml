@@ -1,0 +1,10 @@
+<Metadata>
+   <Name>RichFEZence</Name>
+   <Description>Discord Rich Presence integration for FEZ</Description>
+   <Author>a goat</Author>
+   <Version>0.0.1</Version>
+   <LibraryName>RichFEZence.dll</LibraryName>
+   <Dependencies>
+      <DependencyInfo Name="HAT" MinimumVersion="1.0"/>
+   </Dependencies>
+</Metadata>
