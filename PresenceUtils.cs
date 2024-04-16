@@ -34,7 +34,7 @@ namespace RichFEZence
 		{
 			return new Activity
 			{
-				Details = glitched ? GlitchString(details, glitch_probability) : details,
+				Details = Utf16ToUtf8(glitched ? GlitchString(details, glitch_probability) : details),
 				State = "v" + Fez.Version,
 				Assets =
 				{
