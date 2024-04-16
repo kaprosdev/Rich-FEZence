@@ -30,9 +30,12 @@ namespace RichFEZence
 		enum SpecialPresenceState
 		{
 			None,
+			RebootBlank,
+			Loading,
+			LoadingGlitch,
 			IntroMenus,
+			IntroMenusGlitch,
 			EldersGlitch,
-			MenusGlitch,
 			EndCutscene32,
 			EndCutscene64
 		}
@@ -52,6 +55,8 @@ namespace RichFEZence
 		private Discord.Discord discord;
 		private ActivityManager activityState;
 
+		private SpecialPresenceState special_state = SpecialPresenceState.None;
+
 		const long CLIENT_ID = 1228717137120591983;
 
 		readonly TextInfo ti = new CultureInfo("en-US", false).TextInfo;
@@ -63,26 +68,14 @@ namespace RichFEZence
 		public Hook end64StartHook;
 		public Hook end64EndHook;
 
-		public Activity GetLoadingActivity(bool glitched = false)
-		{
-			return new Activity
-			{
-				Details = glitched ? PresenceUtils.GlitchString("Loading, please wait...") : "Loading, please wait...",
-				State = "v" + Fez.Version,
-				Assets =
-				{
-					LargeImage = glitched ? "start_menus_glitch" : "start_menus"
-				}
-			};
-		}
-
 		public RichFezence(Game game) : base(game)
 		{
 			try
 			{
 				discord = new Discord.Discord(CLIENT_ID, (ulong)CreateFlags.NoRequireDiscord);
 				activityState = discord.GetActivityManager();
-				activityState.UpdateActivity(GetLoadingActivity(), (result) => { });
+				activityState.UpdateActivity(PresenceUtils.GetMenusActivity("Loading, please wait..."), (result) => { });
+				special_state = SpecialPresenceState.Loading;
 			}
 			catch (Exception ex)
 			{
@@ -94,6 +87,34 @@ namespace RichFEZence
 
 		private void UpdateCurrentActivityState()
 		{
+			switch (special_state)
+			{
+				case SpecialPresenceState.RebootBlank:
+					var reboot_activity = new Activity
+					{
+						Details = "",
+						State = "",
+						Assets =
+						{
+							LargeImage = "start_menus",
+							LargeText = null
+						}
+					};
+					activityState.UpdateActivity(reboot_activity, (result) => { });
+					return;
+				case SpecialPresenceState.Loading:
+					activityState.UpdateActivity(PresenceUtils.GetMenusActivity("Loading, please wait..."), (result) => { });
+					return;
+				case SpecialPresenceState.LoadingGlitch:
+					activityState.UpdateActivity(PresenceUtils.GetMenusActivity("Loading, please wait...", true), (result) => { });
+					return;
+				case SpecialPresenceState.IntroMenus:
+					activityState.UpdateActivity(PresenceUtils.GetMenusActivity("In menus"), (result) => { });
+					return;
+				case SpecialPresenceState.IntroMenusGlitch:
+					activityState.UpdateActivity(PresenceUtils.GetMenusActivity("In menus", true, 0.2f), (result) => { });
+					return;
+			}
 			if (GameState.SaveData != null)
 			{
 				// all references in code are lowercase
@@ -147,6 +168,17 @@ namespace RichFEZence
 				{
 					state = "";
 				}
+
+				switch(special_state)
+				{
+					case SpecialPresenceState.EldersGlitch:
+						largeImageName = "elders_glitch";
+						details = PresenceUtils.GlitchString(details);
+						largeImageText = PresenceUtils.GlitchString("DecentLength", 1.0f);
+						break;
+					default:
+						break;
+				}
 				var activity = new Activity
 				{
 					Details = PresenceUtils.Utf16ToUtf8(details),
@@ -166,12 +198,70 @@ namespace RichFEZence
 		{
 			base.Initialize();
 
+			// Debugger.Break();
+			var elders_type = typeof(Fez).Assembly.GetType("FezGame.Components.EldersHexahedron");
+			eldersGlitchHook = new Hook(elders_type.GetMethod("HexaExplode", BindingFlags.Instance | BindingFlags.NonPublic), EldersGlitch);
+			On.FezGame.Components.Reboot.ctor += RebootStart;
+			On.FezGame.Components.Intro.Update += IntroUpdate;
+
 			GomezService.CollectedSplitUpCube += UpdateCurrentActivityState;
 			GomezService.CollectedAnti += UpdateCurrentActivityState;
 			GomezService.CollectedShard += UpdateCurrentActivityState;
 			GomezService.CollectedGlobalAnti += UpdateCurrentActivityState;
 			EngineState.PauseStateChanged += UpdateCurrentActivityState;
-			LevelManager.LevelChanged += UpdateCurrentActivityState;
+			LevelManager.LevelChanged += () =>
+			{
+				if (special_state == SpecialPresenceState.IntroMenus || special_state == SpecialPresenceState.IntroMenusGlitch)
+					special_state = SpecialPresenceState.None;
+				UpdateCurrentActivityState();
+			};
+		}
+
+		private void IntroUpdate(On.FezGame.Components.Intro.orig_Update orig, FezGame.Components.Intro self, GameTime gameTime)
+		{
+			orig(self, gameTime);
+			if(special_state == SpecialPresenceState.Loading || special_state == SpecialPresenceState.LoadingGlitch)
+			{
+				var screen = (int)(typeof(FezGame.Components.Intro).GetField("screen", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(self));
+				if(screen == 0x08 || screen == 0x0D)
+				{
+					special_state = (special_state == SpecialPresenceState.LoadingGlitch ? SpecialPresenceState.IntroMenusGlitch : SpecialPresenceState.IntroMenus);
+					UpdateCurrentActivityState();
+				}
+			}
+		}
+
+		private void EldersGlitch(Action<object, float> orig, object orig_base, float elapsedTime)
+		{
+			orig(orig_base, elapsedTime);
+			if (special_state != SpecialPresenceState.EldersGlitch && special_state != SpecialPresenceState.RebootBlank)
+			{
+				special_state = SpecialPresenceState.EldersGlitch;
+				UpdateCurrentActivityState();
+			}
+		}
+
+		TimeSpan sinceRebooted = TimeSpan.Zero;
+
+		private void RebootDraw(On.FezGame.Components.Reboot.orig_Draw orig, FezGame.Components.Reboot self, GameTime gameTime)
+		{
+			orig(self, gameTime);
+			sinceRebooted += gameTime.ElapsedGameTime;
+			if(sinceRebooted.TotalSeconds >= 3.0f)
+			{
+				On.FezGame.Components.Reboot.Draw -= RebootDraw;
+				special_state = SpecialPresenceState.LoadingGlitch;
+				UpdateCurrentActivityState();
+				sinceRebooted = TimeSpan.Zero;
+			}
+		}
+
+		private void RebootStart(On.FezGame.Components.Reboot.orig_ctor orig, FezGame.Components.Reboot self, Game game, string toLevel)
+		{
+			orig(self, game, toLevel);
+			special_state = SpecialPresenceState.RebootBlank;
+			UpdateCurrentActivityState();
+			On.FezGame.Components.Reboot.Draw += RebootDraw;
 		}
 
 		public override void Update(GameTime gameTime)

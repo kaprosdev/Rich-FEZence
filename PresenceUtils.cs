@@ -1,23 +1,23 @@
-﻿using FezEngine.Tools;
+﻿using Discord;
+using FezEngine.Tools;
+using FezGame;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace RichFEZence
 {
-	internal class PresenceUtils
+	internal static class PresenceUtils
 	{
 
 		readonly static char[] GLITCH_CHARS = "░▒▓┤╡╢╖╕╣║╗╝╜╛┐└┴┬├┼╞╟╚╔╩╦╠╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀■".ToCharArray();
 
-		const float GLITCH_PROBABILITY = 0.2f;
-
-		public static string GlitchString(string baseStr)
+		public static string GlitchString(string baseStr, float glitch_probability = 0.25f)
 		{
 			char[] fullstr = baseStr.ToCharArray();
 			for (int i = 0; i < fullstr.Length; i++)
 			{
-				if (RandomHelper.Probability(GLITCH_PROBABILITY))
+				if (RandomHelper.Probability(glitch_probability))
 				{
 					fullstr[i] = GetGlitchChar();
 				}
@@ -28,6 +28,19 @@ namespace RichFEZence
 		public static char GetGlitchChar()
 		{
 			return RandomHelper.InList(GLITCH_CHARS);
+		}
+
+		public static Activity GetMenusActivity(string details, bool glitched = false, float glitch_probability = 0.25f)
+		{
+			return new Activity
+			{
+				Details = glitched ? GlitchString(details, glitch_probability) : details,
+				State = "v" + Fez.Version,
+				Assets =
+				{
+					LargeImage = glitched ? "start_menus_glitch" : "start_menus"
+				}
+			};
 		}
 
 		// https://stackoverflow.com/questions/6198744/convert-string-utf-16-to-utf-8-in-c-sharp saved my LIFE
