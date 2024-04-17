@@ -119,24 +119,24 @@ namespace RichFEZence
 			{
 				// all references in code are lowercase
 				string current_level_name = LevelManager.Name.ToLower();
-				
+
 				string largeImageName = current_level_name;
-				if(image_replacements.ContainsKey(largeImageName))
+				if (image_replacements.ContainsKey(largeImageName))
 				{
 					// some levels need to piggyback off another level's large image (mostly ones that are 2D versions with no map icon)
 					largeImageName = image_replacements[largeImageName];
 				}
-				else if(!ASSET_NAMES.Contains(largeImageName))
+				else if (!ASSET_NAMES.Contains(largeImageName))
 				{
 					// some levels won't have an image (modded levels?) so for now those use the generic FEZ logo icon
 					largeImageName = "start_menus";
 				}
 
 				string largeImageText = current_level_name;
-				if(direct_level_name_replacements.ContainsKey(largeImageText))
+				if (direct_level_name_replacements.ContainsKey(largeImageText))
 				{
 					largeImageText = direct_level_name_replacements[largeImageText];
-				} 
+				}
 				else
 				{
 					// remove parts of the level name that are non-descriptive
@@ -151,25 +151,25 @@ namespace RichFEZence
 				if (EngineState.Paused)
 				{
 					details = "Paused";
-				} 
+				}
 				else if (details_replacements.ContainsKey(current_level_name))
 				{
 					details = details_replacements[current_level_name];
 				}
 
 				string state = $"🟨 {GameState.SaveData.CubeShards}{(GameState.SaveData.SecretCubes > 0 ? $" + 🟦 {GameState.SaveData.SecretCubes}" : "")}";
-				if(special_state_levels.ContainsKey(current_level_name))
+				if (special_state_levels.ContainsKey(current_level_name))
 				{
 					// certain levels can have Special State
 					// right now it's just Temple of Love but still
 					state = special_state_levels[current_level_name].Invoke(GameState);
-				} 
-				else if(state_disabled_levels.Contains(current_level_name))
+				}
+				else if (state_disabled_levels.Contains(current_level_name))
 				{
 					state = "";
 				}
 
-				switch(special_state)
+				switch (special_state)
 				{
 					case SpecialPresenceState.EldersGlitch:
 						largeImageName = "elders_glitch";
@@ -220,10 +220,10 @@ namespace RichFEZence
 		private void IntroUpdate(On.FezGame.Components.Intro.orig_Update orig, FezGame.Components.Intro self, GameTime gameTime)
 		{
 			orig(self, gameTime);
-			if(special_state == SpecialPresenceState.Loading || special_state == SpecialPresenceState.LoadingGlitch)
+			if (special_state == SpecialPresenceState.Loading || special_state == SpecialPresenceState.LoadingGlitch)
 			{
 				var screen = (int)(typeof(FezGame.Components.Intro).GetField("screen", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(self));
-				if(screen == 0x08 || screen == 0x0D)
+				if (screen == 0x08 || screen == 0x0D)
 				{
 					special_state = (special_state == SpecialPresenceState.LoadingGlitch ? SpecialPresenceState.IntroMenusGlitch : SpecialPresenceState.IntroMenus);
 					UpdateCurrentActivityState();
@@ -247,7 +247,7 @@ namespace RichFEZence
 		{
 			orig(self, gameTime);
 			sinceRebooted += gameTime.ElapsedGameTime;
-			if(sinceRebooted.TotalSeconds >= 3.0f)
+			if (sinceRebooted.TotalSeconds >= 3.0f)
 			{
 				On.FezGame.Components.Reboot.Draw -= RebootDraw;
 				special_state = SpecialPresenceState.LoadingGlitch;
@@ -299,8 +299,11 @@ namespace RichFEZence
 			base.Dispose(disposing);
 		}
 
-		readonly Dictionary<string, string> image_replacements = new Dictionary<string, string>() {
+		readonly Dictionary<string, string> image_replacements = new Dictionary<string, string>()
+		{
 			["gomez_house_2d"] = "gomez_house",
+			["gomez_house_end_32"] = "gomez_house",
+			["gomez_house_end_64"] = "gomez_house",
 			["villageville_2d"] = "villageville_3d",
 			["geezer_house_2d"] = "geezer_house",
 			["parlor_2d"] = "parlor",
@@ -328,7 +331,7 @@ namespace RichFEZence
 			["big_owl"] = (gameState) => "🦉🦉🦉🦉".Substring(0, gameState.SaveData.CollectedOwls * 2)
 		};
 
-		readonly string[] level_name_trims = ["_a$", "_b$", "_c$", "_2d$", "_3d$", "_one$", "_two$", "_2$", "_three$", "_alt$"];
+		readonly string[] level_name_trims = ["_a$", "_b$", "_c$", "_2d$", "_3d$", "_one$", "_two$", "_2$", "_three$", "_alt$", "_end_\\d\\d$"];
 
 		readonly Dictionary<string, string> segment_level_name_replacements = new Dictionary<string, string>()
 		{
@@ -421,6 +424,7 @@ namespace RichFEZence
 											"pivot_watertower",
 											"purple_lodge",
 											"purple_lodge_ruin",
+											"pyramid",
 											"quantum",
 											"rails",
 											"ritual",

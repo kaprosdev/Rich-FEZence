@@ -6,7 +6,10 @@ The images in this folder are extra game screenshots to stand in for presence st
 If you're running this using a different application's ID, these are the only images you'd need that don't come from unpacking the game.
 
 ## Readying assets for a Discord application
-Aside from these images, all of the images this mod expects in the connected Discord application are in the `other textures/map_screens` subdirectory of a FEZ unpack (excluding `shine_rays.png`).
+Aside from these images, most of the images this mod expects in the connected Discord application are in the `other textures/map_screens` subdirectory of a FEZ unpack (excluding `shine_rays.png`).
+
+Exceptions (that are also expected):
+- `other textures/warp/pyramid.png` (the finale level Pyramid doesn't have a map node, but this texture works as a preview)
 
 Discord requires assets to be 512x512 at minimum, so resize all of those images using Nearest Neighbor (I used https://redketchup.io/bulk-image-resizer). 
 Don't rename them - names should be all-lowercase `snake_case` corresponding to the name of the room they belong to.
@@ -17,7 +20,7 @@ All of the extra images included here should already be 512x512.
 Spoilers (for the mod and FEZ):
 - `start_menus.png` is displayed in the normal main menu and in levels that do not have a corresponding image.
 - `start_menus_glitch.png` [eventually] is displayed in the glitched main menu.
-- `elders.png` should be self-explanatory (elders isn't in the map and therefore doesn't have a preview).
+- `elders.png` should be self-explanatory (elders isn't in the map and therefore doesn't have a map node).
 - `elders_glitch.png` [eventually] is displayed between the Hexahedron breaking and the reboot.
 - `descending.png` is displayed during the 32-bit ending cutscene.
 - `transcending.jpg` is displayed during the 64-bit ending cutscene.
